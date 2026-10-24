@@ -1,0 +1,10 @@
+{
+  "$schema": "node_modules/wrangler/config-schema.json",
+  "name": "crawler",
+  "main": "web/worker.js",
+  "compatibility_date": "2026-10-24",
+  "browser": { "binding": "BROWSER", "remote": true },
+  "assets": { "directory": "public", "binding": "ASSETS", "run_worker_first": ["/api/*"] },
+  "routes": [{ "pattern": "crawler.everydayai.work", "custom_domain": true }],
+  "ratelimits": [{ "name": "CRAWL_LIMITER", "namespace_id": "1001", "simple": { "limit": 5, "period": 60 } }]
+}

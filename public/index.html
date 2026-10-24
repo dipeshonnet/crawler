@@ -1,0 +1,19 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="description" content="Turn a public webpage into clean, downloadable Markdown and PDF with Everyday AI.">
+<title>Crawler · Everyday AI</title><link rel="stylesheet" href="/style.css"><script src="/app.js" defer></script>
+</head>
+<body>
+<header><a href="/" class="brand"><span class="mark">↗</span> everyday<span>ai</span><span class="divider">/</span><strong>Crawler</strong></a><a href="https://github.com/dipeshonnet/crawler" target="_blank" rel="noopener">View source ↗</a></header>
+<main>
+<p class="eyebrow">LESS CLUTTER. MORE CONTENT.</p>
+<h1>A webpage.<br>A clean slate.</h1>
+<p class="intro">Extract the useful content from a public webpage.<br>Read it here, save the Markdown, or take it with you as a PDF.</p>
+<form id="crawl-form"><label for="url">Website URL</label><div class="input-row"><input id="url" name="url" type="url" placeholder="https://example.com/article" required autocomplete="url"><button id="extract" type="submit">Extract content <span>↗</span></button></div><p class="hint">One page at a time. Some websites restrict automated access.</p></form>
+<p id="status" role="status" aria-live="polite"></p>
+<section id="result" hidden><div class="result-header"><div><p class="eyebrow">YOUR EXTRACT</p><h2>Content, without the noise.</h2><p id="source"></p></div><div class="actions"><button id="markdown" class="secondary">Save Markdown</button><button id="pdf">Download PDF ↓</button></div></div><pre id="content" tabindex="0" aria-label="Extracted content"></pre></section>
+<div class="features"><p><span>01</span> Paste a link</p><p><span>02</span> Extract the content</p><p><span>03</span> Make it yours</p></div>
+</main><footer><span>A little tool by Everyday AI.</span><span>Public webpages. Readable results.</span></footer>
+</body></html>
