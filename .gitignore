@@ -1,0 +1,13 @@
+__pycache__/
+*.py[cod]
+.venv/
+venv/
+.browsers/
+.crawl4ai/
+.test-deps/
+tmp/
+.env
+.env.*
+!.env.example
+extracted_content.pdf
+ExtractingLeads/

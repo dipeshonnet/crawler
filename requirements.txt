@@ -1,0 +1,3 @@
+# SecureBrowserManager adapts the browser launch API inspected in this version.
+crawl4ai==0.9.4
+playwright>=1.49
