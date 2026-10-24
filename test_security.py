@@ -76,6 +76,25 @@ def local_server(tls=False):
 
 
 class SecurityTests(unittest.TestCase):
+    def test_main_exports_linked_sources_and_optional_starting_page_pdf(self):
+        fake = AsyncMock()
+        fake.__aenter__.return_value = fake
+        fake.arun.side_effect = [
+            SimpleNamespace(success=True, markdown=SimpleNamespace(raw_markdown="# Start"),
+                            links={"internal": [{"href": "/child"}]}),
+            SimpleNamespace(success=True, markdown="# Child\n\nEvidence", links={}),
+        ]
+        with tempfile.TemporaryDirectory(dir=os.environ.get("SECURITY_TEST_TMP")) as directory:
+            output = Path(directory) / "knowledge"
+            with patch("crawler.create_crawler", return_value=fake), patch("crawler.write_to_pdf") as pdf:
+                kb = asyncio.run(main("https://example.com", max_depth=1, output=output, pdf="test.pdf"))
+                self.assertEqual([doc["depth"] for doc in kb["documents"]], [0, 1])
+                self.assertTrue((output / "chunks/chunks.jsonl").is_file())
+                self.assertEqual((output / kb["documents"][1]["raw_path"]).read_text(encoding="utf-8"), "# Child\n\nEvidence")
+                pdf.assert_called_once_with("# Start", "test.pdf")
+                with self.assertRaises(FileExistsError):
+                    asyncio.run(main(output=output))
+
     def test_failed_crawl_does_not_write_pdf(self):
         fake = AsyncMock()
         fake.__aenter__.return_value = fake

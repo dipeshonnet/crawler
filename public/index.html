@@ -2,18 +2,24 @@
 <html lang="en">
 <head>
 <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
-<meta name="description" content="Turn a public webpage into clean, downloadable Markdown and PDF with Everyday AI.">
-<title>Crawler · Everyday AI</title><link rel="stylesheet" href="/style.css"><script src="/app.js" defer></script>
+<meta name="description" content="Collect linked webpages into an organized knowledge base with source Markdown, citations, and RAG-ready chunks.">
+<title>Crawler · Everyday AI</title><link rel="stylesheet" href="/style.css"><script src="/app.js" type="module"></script>
 </head>
 <body>
 <header><a href="/" class="brand"><span class="mark">↗</span> everyday<span>ai</span><span class="divider">/</span><strong>Crawler</strong></a><a href="https://github.com/dipeshonnet/crawler" target="_blank" rel="noopener">View source ↗</a></header>
 <main>
 <p class="eyebrow">LESS CLUTTER. MORE CONTENT.</p>
-<h1>A webpage.<br>A clean slate.</h1>
-<p class="intro">Extract the useful content from a public webpage.<br>Read it here, save the Markdown, or take it with you as a PDF.</p>
-<form id="crawl-form"><label for="url">Website URL</label><div class="input-row"><input id="url" name="url" type="url" placeholder="https://example.com/article" required autocomplete="url"><button id="extract" type="submit">Extract content <span>↗</span></button></div><p class="hint">One page at a time. Some websites restrict automated access.</p></form>
+<h1>Follow the links.<br>Keep the knowledge.</h1>
+<p class="intro">Collect a page and its linked pages into an organized knowledge base.<br>Keep the sources, browse the content, and download chunks ready for RAG.</p>
+<form id="crawl-form"><label for="url">Starting page URL</label><div class="input-row"><input id="url" name="url" type="url" placeholder="https://example.com/docs" required autocomplete="url"><button id="extract" type="submit">Collect content <span>↗</span></button></div>
+<div class="crawl-options"><div><label for="depth">Link depth</label><select id="depth"><option value="0">0 — starting page only</option><option value="1" selected>1 — directly linked pages</option><option value="2">2 — two levels of links</option><option value="3">3 — three levels of links</option><option value="4">4 — four levels of links</option></select></div><div><label for="max-pages">Page limit</label><input id="max-pages" type="number" min="1" max="30" value="10" required></div><div><label for="scope">Follow links within</label><select id="scope"><option value="site">Same website</option><option value="path">Starting URL path</option></select></div></div>
+<p class="hint">Depth counts links from the starting page. Up to 30 page attempts and about 90 seconds per crawl; each page may take longer to finish. Some websites restrict automated access.</p></form>
 <p id="status" role="status" aria-live="polite"></p>
-<section id="result" hidden><div class="result-header"><div><p class="eyebrow">YOUR EXTRACT</p><h2>Content, without the noise.</h2><p id="source"></p></div><div class="actions"><button id="markdown" class="secondary">Save Markdown</button><button id="pdf">Download PDF ↓</button></div></div><pre id="content" tabindex="0" aria-label="Extracted content"></pre></section>
+<section id="result" hidden><div class="result-header"><div><p class="eyebrow">YOUR KNOWLEDGE BASE</p><h2>Sources with structure.</h2><p id="source"></p></div><div class="actions"><button id="bundle">Download knowledge base ↓</button><button id="chunks" class="secondary">Save RAG chunks</button></div></div>
+<p id="crawl-summary"></p><ul id="failures"></ul>
+<div class="reader-toolbar"><div><label for="page-select">Browse downloaded pages</label><select id="page-select"></select></div><div class="actions"><button id="markdown" class="secondary">Save page Markdown</button><button id="pdf" class="secondary">Download page PDF</button></div></div>
+<p class="hint">The ZIP includes source Markdown, documents with metadata, a linked index, RAG chunks, and a crawl report. Content stays in your browser after extraction. No AI summaries are generated.</p>
+<pre id="content" tabindex="0" aria-label="Extracted content"></pre></section>
 <div class="features"><p><span>01</span> Paste a link</p><p><span>02</span> Extract the content</p><p><span>03</span> Make it yours</p></div>
 </main><footer><span>A little tool by Everyday AI.</span><span>Public webpages. Readable results.</span></footer>
 </body></html>

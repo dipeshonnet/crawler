@@ -1,7 +1,12 @@
 import asyncio
+import argparse
 import base64
+from collections import deque
 from html import escape
 from pathlib import Path
+import time
+
+from knowledge_base import collect_pages, write_knowledge_base
 
 from crawl4ai import AsyncWebCrawler, BrowserConfig
 from crawl4ai.async_crawler_strategy import AsyncPlaywrightCrawlerStrategy
@@ -99,17 +104,37 @@ def write_to_pdf(text, output_path="extracted_content.pdf"):
             browser.close()
     print(f"PDF saved as '{output_path}'")
 
-async def main():
+async def main(url="https://www.example.com", max_depth=0, max_pages=10, scope="site", output=None, pdf=None):
+    if output is not None and Path(output).exists():
+        raise FileExistsError(f"Choose a new output directory: {output}")
     async with create_crawler() as crawler:
-        result = await crawler.arun(
-            url="https://www.example.com",
-        )
-        if not result.success:
-            raise RuntimeError(f"Crawl failed: {result.error_message}")
-        extracted_text = result.markdown
-        print(extracted_text[:300])
+        async def extract_page(target):
+            result = await crawler.arun(url=target)
+            if not result.success:
+                raise RuntimeError(f"Crawl failed: {result.error_message}")
+            markdown = getattr(result.markdown, "raw_markdown", result.markdown)
+            hrefs = [link.get("href", "") for link in (getattr(result, "links", None) or {}).get("internal", [])]
+            return markdown, hrefs
+        knowledge = await collect_pages(extract_page, url, max_depth, max_pages, scope)
+    pages, report = knowledge["documents"], knowledge["report"]
+    failures = report["failures"]
+    output = output or f"knowledge-base-{time.time_ns()}"
+    directory = write_knowledge_base(knowledge, output)
+    print(f"Saved {len(pages)} pages and {len(knowledge['chunks'])} chunks to {directory}")
+    if failures or report["truncated"]:
+        print(f"Coverage is partial: {len(failures)} failed attempts; stop reason: {report['stop_reason']}. See crawl-report.json.")
+    if pdf:
+        await asyncio.to_thread(write_to_pdf, pages[0]["markdown"], pdf)
+    return knowledge
 
-        await asyncio.to_thread(write_to_pdf, extracted_text)
 
 if __name__ == "__main__":
-    asyncio.run(main())
+    parser = argparse.ArgumentParser(description="Collect linked webpages into a RAG-ready knowledge base.")
+    parser.add_argument("url", nargs="?", default="https://www.example.com")
+    parser.add_argument("--depth", type=int, choices=range(5), default=0, help="Link hops from the starting page (0–4)")
+    parser.add_argument("--max-pages", type=int, choices=range(1, 31), default=10, help="Maximum page attempts, including failures")
+    parser.add_argument("--scope", choices=("site", "path"), default="site")
+    parser.add_argument("--output", help="New directory for this crawl; must not already exist")
+    parser.add_argument("--pdf", help="Optional PDF filename for the starting page")
+    args = parser.parse_args()
+    asyncio.run(main(args.url, args.depth, args.max_pages, args.scope, args.output, args.pdf))

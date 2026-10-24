@@ -13,3 +13,5 @@ extracted_content.pdf
 ExtractingLeads/
 node_modules/
 .wrangler/
+knowledge-base*/
+output/playwright/

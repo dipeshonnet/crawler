@@ -1,17 +1,5 @@
-export function publicUrl(value) {
-  let url;
-  try { url = new URL(value); } catch { throw new Error('Enter a complete https:// website URL.'); }
-  const host = url.hostname.toLowerCase();
-  // Only DNS hostnames; Cloudflare's browser service handles network isolation.
-  if (!['http:', 'https:'].includes(url.protocol) || url.username || url.password ||
-      (url.port && !['80', '443'].includes(url.port)) || !host.includes('.') ||
-      /^[\d.]+$/.test(host) || host.includes(':') ||
-      /(^|\.)(localhost|local|internal|test|invalid|onion)$/.test(host)) {
-    throw new Error('Use a public website URL without credentials or a custom port.');
-  }
-  url.hash = '';
-  return url.href;
-}
+import {crawl, crawlOptions, publicUrl} from './crawl.js';
+export {publicUrl} from './crawl.js';
 
 const escape = text => text.replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 function json(data, status = 200) {
@@ -37,23 +25,14 @@ export default {
     } catch { return json({error:'Invalid request.'},400); }
     if (!body || typeof body !== 'object') return json({error:'Invalid request.'},400);
     if (url.pathname === '/api/crawl') {
-      let target;
-      try { target = publicUrl(body.url); } catch (error) { return json({error:error.message},400); }
+      let target, options;
+      try { target = publicUrl(body.url); options = crawlOptions(body); }
+      catch (error) { return json({error:error.message},400); }
       try {
-        const response = await env.BROWSER.quickAction('markdown', {
-          url:target, gotoOptions:{waitUntil:'networkidle2',timeout:30000}
-        });
-        if (!response.ok) return json({error:'The website could not be extracted. It may block automated browsers, or the daily browser allowance may be reached.'},502);
-        const contentType = response.headers.get('content-type') || '';
-        let markdown;
-        if (contentType.includes('json')) {
-          const result = await response.json();
-          markdown = typeof result === 'string' ? result : result.result;
-        } else markdown = await response.text();
-        if (typeof markdown !== 'string' || !markdown.trim()) return json({error:'No readable content was found.'},422);
-        if (markdown.length > 200000) return json({error:'This page is too large. Try a smaller page.'},422);
-        return json({url:target,markdown});
-      } catch { return json({error:'The browser service is unavailable. Please try again shortly.'},502); }
+        const knowledge = await crawl(target, options, env.BROWSER);
+        // Preserve the original single-page fields for existing API clients.
+        return json({url:target, markdown:knowledge.documents[0].markdown, ...knowledge});
+      } catch (error) { return json({error:error.message || 'The browser service is unavailable.'},502); }
     }
     if (typeof body.markdown !== 'string' || !body.markdown.trim() || body.markdown.length > 200000) return json({error:'Extract a page before downloading its PDF.'},400);
     try {
