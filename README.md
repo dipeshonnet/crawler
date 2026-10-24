@@ -42,8 +42,8 @@ The regression suite checks browser isolation, TLS verification, failure handlin
 
 The `public/` web interface and `web/worker.js` run on Cloudflare Workers. The hosted app uses Cloudflare Browser Run to extract Markdown and create PDFs; the original Python CLI remains available for local use. Cloudflare's fonts and extraction behavior can differ from the local Crawl4AI renderer.
 
-Install Node.js and project dependencies with `pnpm install`. Run web checks with `pnpm test`, and deploy with `pnpm deploy` after signing into Cloudflare. `wrangler.jsonc` declares the browser service, a per-IP request limit, static assets, and the custom domain `crawler.everydayai.work`.
+Install Node.js and project dependencies with `pnpm install`. Run web checks with `pnpm test`, and deploy with `pnpm run deploy` after signing into Cloudflare. `wrangler.jsonc` declares the browser service, a per-IP request limit, static assets, and the custom domain `crawler.everydayai.work`.
 
-For automatic deployment, connect this repository's `main` branch in Cloudflare Workers Builds. Use `pnpm test` as the build command and `pnpm deploy` as the deploy command. Cloudflare supplies deployment credentials through its Git integration; do not commit API tokens.
+For automatic deployment, connect this repository's `main` branch in Cloudflare Workers Builds. The configured build command is `node --test test/worker.test.js`, and the deploy command is `npx wrangler deploy`. Cloudflare supplies deployment credentials through its Git integration; do not commit API tokens.
 
 The hosted app accepts public HTTP(S) URLs, displays extracted Markdown, and downloads Markdown or PDFs. Requests are limited to five per minute per IP; Cloudflare's account-level browser allowance also applies. Extracted content is not stored on the server.
