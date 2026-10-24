@@ -59,8 +59,11 @@ export default {
     try {
       const html = '<!doctype html><html><head><meta charset="utf-8"><style>body{font-family:"Noto Sans",sans-serif;font-size:11pt;line-height:1.6}pre{font:inherit;white-space:pre-wrap;overflow-wrap:anywhere}</style></head><body><pre dir="auto">'+escape(body.markdown)+'</pre></body></html>';
       const pdf = await env.BROWSER.quickAction('pdf', {html,pdfOptions:{format:'A4',printBackground:true,margin:{top:'15mm',right:'15mm',bottom:'15mm',left:'15mm'}}});
-      if (!pdf.ok || !pdf.headers.get('content-type')?.includes('application/pdf')) return json({error:'PDF generation failed. Please try again shortly.'},502);
-      return new Response(pdf.body,{headers:{'Content-Type':'application/pdf','Content-Disposition':'attachment; filename="extracted-content.pdf"','Cache-Control':'no-store','X-Content-Type-Options':'nosniff'}});
+      if (!pdf.ok) return json({error:'PDF generation failed. Please try again shortly.'},502);
+      const bytes = await pdf.arrayBuffer();
+      // Browser Run can return binary data with a generic content type.
+      if (new TextDecoder().decode(bytes.slice(0,5)) !== '%PDF-') return json({error:'The browser did not return a valid PDF. Please try again shortly.'},502);
+      return new Response(bytes,{headers:{'Content-Type':'application/pdf','Content-Disposition':'attachment; filename="extracted-content.pdf"','Cache-Control':'no-store','X-Content-Type-Options':'nosniff'}});
     } catch { return json({error:'PDF generation is temporarily unavailable.'},502); }
   }
 };
