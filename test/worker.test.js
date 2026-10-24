@@ -24,6 +24,7 @@ test('PDF escapes extracted HTML and returns a downloadable PDF',async()=> {
   let options;
   const response = await worker.fetch(request('/api/pdf',{markdown:'<script>alert(1)</script>'}),{...env,BROWSER:{quickAction:async(_,args)=>{options=args;return new Response('%PDF-1.7',{headers:{'Content-Type':'application/octet-stream'}});}}});
   assert.equal(response.status,200); assert.match(response.headers.get('Content-Disposition'),/attachment/);
+  assert.equal(options.pdfOptions.format,'a4');
   assert.ok(options.html.includes('&lt;script&gt;')); assert.ok(!options.html.includes('<script>'));
 });
 test('throttles requests before opening a browser',async()=> {
